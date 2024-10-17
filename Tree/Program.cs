@@ -49,6 +49,23 @@ public class Tree : ICollection<int>
         }
     }
 
+    public void Traverse(Node current)
+    {
+
+    }
+
+    private void TraverseItem(Node current)
+    {
+        if (current != null)
+        {
+            Console.WriteLine(current.Value);
+            TraverseItem(current.left);
+            TraverseItem(current.right);
+        }
+        else
+            return;
+    }
+
     public void Clear()
     {
         top = null;
@@ -132,6 +149,25 @@ public class Tree : ICollection<int>
     IEnumerator IEnumerable.GetEnumerator()
     {
         throw new NotImplementedException();
+    }
+
+    public int CountItem()
+    {
+        int result = 0;
+        CountItem(top, ref result);
+        return result;
+    }
+
+    private int CountItem(Node current, ref int result)
+    {
+        if (current != null)
+        {
+            result++;
+            CountItem(current.left, ref result);
+            CountItem(current.right, ref result);
+        }
+
+        return result;
     }
 }
 
