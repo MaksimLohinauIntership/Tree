@@ -51,7 +51,7 @@ public class Tree : ICollection<int>
 
     public void Traverse(Node current)
     {
-
+        TraverseItem(current);
     }
 
     private void TraverseItem(Node current)
@@ -91,64 +91,82 @@ public class Tree : ICollection<int>
 
     public void CopyTo(int[] array, int arrayIndex)
     {
-        throw new NotImplementedException();
+        CopyToRecursive(top, array, ref arrayIndex);
     }
 
-    public IEnumerator<int> GetEnumerator()
+    private void CopyToRecursive(Node node, int[] array, ref int index)
     {
-        throw new NotImplementedException();
+        if (node == null)
+            return;
+
+        CopyToRecursive(node.left, array, ref index);
+        array[index++] = node.Value;
+        CopyToRecursive(node.right, array, ref index);
     }
 
-    public bool Remove(int item)
+    public bool Remove(int value)
     {
-        return RemoveItem(item, top);
+        if (Contains(value))
+        {
+            top = RemoveRecursive(top, value);
+            return true;
+        }
+        return false;
     }
-    private bool RemoveItem(int item, Node current)
+
+    private Node RemoveRecursive(Node node, int value)
     {
-        if (current == null)
-            return false;
+        if (node == null)
+            return null;
+
+        if (value < node.Value)
+        {
+            node.left = RemoveRecursive(node.left, value);
+        }
+        else if (value > node.Value)
+        {
+            node.right = RemoveRecursive(node.right, value);
+        }
         else
         {
-            if (current.Value > item)
-                return RemoveItem(item, current.left);
-            if (current.Value < item)
-                return RemoveItem(item, current.right);
-            if (current.Value == item)
-            {
-                if (current.left == null && current.right == null)
-                {
-                    current = null;
-                    return RemoveItem(item, current);
-                }
+            // Узел с одним или нулем дочерних узлов
+            if (node.left == null)
+                return node.right;
+            else if (node.right == null)
+                return node.left;
 
-                if (current.left == null && current.right != null)
-                {
-                    current = current.right;
-                    current.right = null;
-                    return RemoveItem(item, current);
-                }
-
-                if (current.left != null && current.right == null)
-                {
-                    current = current.left;
-                    current.left = null;
-                    return RemoveItem(item, current);
-                }
-
-                if (current.left != null && current.right != null)
-                {
-                    current = current.right;
-                    current.right = null;
-                    return RemoveItem(item, current);
-                }
-            }
-            return false;
+            // Узел с двумя дочерними узлами: ищем минимальный элемент в правом поддереве
+            node.Value = FindMinValue(node.right);
+            node.right = RemoveRecursive(node.right, node.Value);
         }
+        return node;
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
+    private int FindMinValue(Node node)
     {
-        throw new NotImplementedException();
+        int minValue = node.Value;
+        while (node.left != null)
+        {
+            minValue = node.left.Value;
+            node = node.left;
+        }
+        return minValue;
+    }
+
+    private IEnumerable<int> InOrderTraversal(Node node)
+    {
+        if (node != null)
+        {
+            foreach (var left in InOrderTraversal(node.left))
+            {
+                yield return left;
+            }
+            yield return node.Value;
+            foreach (var right in InOrderTraversal(node.right))
+            {
+                yield return right;
+            }
+        }
     }
 
     public int CountItem()
@@ -168,6 +186,16 @@ public class Tree : ICollection<int>
         }
 
         return result;
+    }
+
+    public IEnumerator<int> GetEnumerator()
+    {
+        return InOrderTraversal(top).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
 
